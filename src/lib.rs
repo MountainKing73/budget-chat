@@ -32,7 +32,7 @@ pub async fn run() {
 
     loop {
         let (socket, _) = listener.accept().await.unwrap();
-        //println!("Starting connection");
+        println!("Starting connection");
         let conn = Connection::new(socket);
         let tx_clone = tx.clone();
         tokio::spawn(async move {
@@ -66,7 +66,7 @@ async fn process_manager(mut rx: Receiver<Command>) {
                     let result = contained_users.join(", ");
 
                     let contain_msg = format!("* The room contains: {}\n", result);
-                    //println!("sending: {}", contain_msg);
+                    println!("sending: {}", contain_msg);
                     let _ = tx.send(Command::Announcement(contain_msg)).await;
 
                     let announce = format!("* {} has entered the room\n", name);
@@ -123,13 +123,13 @@ async fn process_client(mut connection: Connection, manager_tx: Sender<Command>)
         .write_message("Welcome to budgetchat! What shall I call you?\n")
         .await;
     let response = connection.read_message().await;
-    //println!("Response: {:?}", response);
+    println!("Name response: {:?}", response);
     let mut name = str::from_utf8(&response).unwrap().to_string();
     name = strip_trailing_newline(&name).to_string();
 
-    //println!("validating name: {}", name);
+    println!("validating name: {}", name);
     if !validate_username(&name) {
-        //println!("Disconnected");
+        println!("Disconnected");
         return;
     }
 
@@ -146,12 +146,13 @@ async fn process_client(mut connection: Connection, manager_tx: Sender<Command>)
                 match command {
                     Command::SetName(_, _) => println!("Invalid command"),
                     Command::Message(from, msg) => {
+                        println!("Message: {:?}", response);
                         connection.write_message(&format!("[{}] {}", from, msg)).await;
                     }
                     Command::Announcement(msg) => connection.write_message(&msg).await,
                     Command::Disconnect(msg) => {
                         connection.write_message(&msg).await;
-                        //println!("User disconnected");
+                        println!("User disconnected");
                         break;
                     }
                 }
