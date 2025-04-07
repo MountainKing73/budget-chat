@@ -66,6 +66,7 @@ pub async fn room_manager(mut rx: Receiver<RoomCommand>) {
                 send_to_others(&users, name, msg).await;
             }
             RoomCommand::Disconnect(name) => {
+                users.remove(&name);
                 let announce = format!("* {} has left the room", name);
                 send_to_others(&users, name, announce).await;
             }
